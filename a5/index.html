@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+          integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+          crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+            integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+            crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container-sm">
+        <h1>Clock Offset</h1>
+
+        <table class="table table-striped table-bordered table-sm" style="margin-bottom:15px;">
+            <tr><th>Parameter</th><th>Expression</th><th>Value (milliseconds)</th></tr>
+            <tr><td>Client start time</td><td>t<sub>1</sub></td><td id="t1">-</td></tr>
+            <tr><td>Server start time</td><td>t<sub>2</sub></td><td id="t2">-</td></tr>
+            <tr><td>Server end time  </td><td>t<sub>3</sub></td><td id="t3">-</td></tr>
+            <tr><td>Client end time  </td><td>t<sub>4</sub></td><td id="t4">-</td></tr>
+            <tr><td>Client delta     </td><td>t<sub>4</sub> - t<sub>1</sub></td>
+                <td id="t4t1">-</td></tr>
+            <tr><td>Server delta     </td><td>t<sub>3</sub> - t<sub>2</sub></td>
+              <td id="t3t2">-</td></tr>
+            <tr><td>RTT              </td><td>(t<sub>4</sub> - t<sub>1</sub>) - (t<sub>3</sub> -
+               t<sub>2</sub>)</td><td id="rtt">-</td></tr>
+            <tr><th>Offset           </th><td>(t<sub>1</sub> + RTT/2) -
+              t<sub>2</sub></td><th id="offset">-</th></tr>
+          </table>
+   <button class="btn btn-primary" id="button">Measure the Offset</button>
+  </div>
+
+  <script>
+      $("#button").click( function() {
+          const t1 = performance.timing.navigationStart + performance.now();
+          $.ajax({
+              url: "/time",
+              type: "GET",
+              success: function(data) {
+                  const t4 = performance.timing.navigationStart + performance.now();
+                  const t2 = data["t2"];
+                  const t3 = data["t3"];
+                  const rtt = (t4 - t1) - (t3 - t2);
+                  const offset = (t1 + rtt / 2) - t2;
+                                
+                  $("#t1").html(t1.toFixed(3));
+                  $("#t2").html(t2.toFixed(3));
+                  $("#t3").html(t3.toFixed(3));
+                  $("#t4").html(t4.toFixed(3));
+                  $("#t4t1").html((t4 - t1).toFixed(3));
+                  $("#t3t2").html((t3 - t2).toFixed(3));
+                  $("#rtt").html(rtt.toFixed(3));
+                  $("#offset").html(offset.toFixed(3));
+              },
+              error: function(e) {
+                  alert("Error: " + e.status + ": " + e.statusText);
+              }
+          });
+      } )
+  </script>
+</body>
+</html>
